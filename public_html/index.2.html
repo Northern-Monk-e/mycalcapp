@@ -44,13 +44,16 @@
                     if (key.matches('button')) {
                         // Remove .is-depressed class from all keys
                         Array.from(key.parentNode.children).forEach(k => k.classList.remove('is-depressed'))
-
-                        const firstValue = calculator.dataset.firstValue
-                        const operator = calculator.dataset.operator
-                        const secondValue = displayedNum
-
-                        switch (action) {
-                            case 'decimal':
+                        //Okay, what are we doing, is it a number, a decimal, operator etc.
+                        if (!action) {//If it's not an action it's a number                            
+                            if (displayedNum === '0' || previousKeyType === 'operator') {
+                                display.textContent = keyContent
+                            } else {
+                                display.textContent = displayedNum + keyContent
+                            }
+                            calculator.dataset.previousKey = 'number'
+                        } else { //It's an action of some sort
+                            if (action === 'decimal') {
                                 // Do nothing if string has a dot
                                 if (!displayedNum.includes('.')) {
                                     display.textContent = displayedNum + '.'
@@ -58,61 +61,43 @@
                                     display.textContent = '0.'
                                 }
                                 calculator.dataset.previousKey = 'decimal'
-                                break;
-                            case 'clear':
-                                //Must be the clear button
-                                calculator.dataset.previousKeyType = undefined
-                                calculator.dataset.operator = undefined
-                                calculator.dataset.firstValue = undefined
-                                display.textContent = 0
-                                console.log('clear switch', action)
-                                break;
-                            case 'calculate':
-//                                    if (firstValue) {
-//                                        if (previousKeyType === 'calculate') {
-//                                            firstValue = displayedNum
-//                                        }
-//                                        display.textContent = calculate(firstValue, operator, secondValue)
-//                                    }
-//                                    calculator.dataset.modValue = secondValue
-//                                    calculator.dataset.previousKeyType = 'calculate'
-                                console.log('calculate switch', action)
-                                break;
-                            case 'add':
-                            case 'subtract':
-                            case 'multiply':
-                            case 'divide':
-//                                    //Do we have a previously uncalculated sum to perform                                
-//                                    if (firstValue && operator && previousKeyType !== 'operator') {
-//                                        const calcValue = calculate(firstValue, operator, secondValue)
-//                                        display.textContent = calcValue
-//                                        calculator.dataset.firstValue = calcValue
-//                                    } else {
-//                                        calculator.dataset.firstValue = displayedNum
-//                                    }
-//                                    //Highlight the operator keyed
-//                                    key.classList.add('is-depressed')
-//                                    // Add custom attributes to hold data
-//                                    calculator.dataset.previousKeyType = 'operator'
-//                                    calculator.dataset.operator = action
-                                console.log('Operator clicked: ', action, operator)
-                                break;
-                            default:
-                                //It must be a number
-                                if (displayedNum === '0' || previousKeyType === 'operator') {
-                                    display.textContent = keyContent
-                                    //@debug
-                                    //has the previous value been saved/processed? 
-                                    //what if previous key was a decimal?
-                                } else {
-                                    //Okay, must be a plural digit number - append.
-                                    display.textContent = displayedNum + keyContent
+                            } else {
+                                const firstValue = calculator.dataset.firstValue
+                                const operator = calculator.dataset.operator
+                                const secondValue = displayedNum
+                                if (action === 'add' || action === 'subtract' || action === 'multiply' || action === 'divide') {
+                                    //Do we have a previously uncalculated sum to perform                                
+                                    if (firstValue && operator && previousKeyType !== 'operator') {
+                                        const calcValue = calculate(firstValue, operator, secondValue)
+                                        display.textContent = calcValue
+                                        calculator.dataset.firstValue = calcValue
+                                    } else {
+                                        calculator.dataset.firstValue = displayedNum
+                                    }
+                                    //Highlight the operator keyed
+                                    key.classList.add('is-depressed')
+                                    // Add custom attributes to hold data
+                                    calculator.dataset.previousKeyType = 'operator'
+                                    calculator.dataset.operator = action
+                                } else if (action === 'calculate') {
+                                    let firstValue = calculator.dataset.firstValue
+                                    const operator = calculator.dataset.operator
+                                    const secondValue = displayedNum
+                                    if (firstValue) {
+                                        if (previousKeyType === 'calculate') {
+                                            firstValue = displayedNum
+                                        }
+                                        display.textContent = calculate(firstValue, operator, secondValue)
+                                    }
+                                    calculator.dataset.modValue = secondValue
+                                    calculator.dataset.previousKeyType = 'calculate'
+                                } else { //Must be the clear button
+                                    calculator.dataset.previousKeyType = null
+                                    calculator.dataset.operator = null
+                                    calculator.dataset.firstValue = null
+                                    display.textContent = '0'
                                 }
-                                //So, current key which will now become previousKey 
-                                //after exiting this block. So, remember it as such.
-                                calculator.dataset.previousKey = 'number'
-                                console.log('default switch section should fire when numbers are clicked', action)
-                                break;
+                            }
                         }
                     }
                 });
@@ -191,7 +176,7 @@
                 <button>3</button>
                 <button>0</button>
                 <button data-action="decimal">.</button>
-                <button data-action="clear">AC</button>
+                <button data-action="clear">C</button>
                 <button class="key--equal" data-action="calculate">=</button>
             </div>
 
