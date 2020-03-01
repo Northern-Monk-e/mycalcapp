@@ -16,10 +16,10 @@
 
                 const calculate = (n1, operator, n2, nthDp) => {
                     n1 = parseFloat(n1), n2 = parseFloat(n2), nthDp = nthDp ? nthDp : 3
-                    return parseFloat((operator === 'add' ? n1 + n2 : (operator === 'subtract' ? n1 - n2 : (operator === 'multiply' ? n1 * n2 : (operator === 'divide' ? n1 / n2 : 'ERROR')))).toPrecision(nthDp));
+                    return parseFloat((operator === 'add' ? n1 + n2 : (operator === 'subtract' ? n1 - n2 : (operator === 'multiply' ? n1 * n2 : /* divide */ n1 / n2))).toPrecision(nthDp));
                 }
 
-                var debug = function () {
+                const debug = function () {
                     console.log((Array.prototype.slice.call(arguments)).join(' - '))
                 }
 
@@ -58,25 +58,11 @@
                                     display.textContent = '0.'
                                 }
                                 calculator.dataset.previousKeyType = 'decimal'
-                                debug(
-                                        'DecimalKey',
-                                        calculator.dataset.firstValue,
-                                        calculator.dataset.operator,
-                                        secondValue,
-                                        'prevKey: ' + previousKeyType
-                                        )
                                 break;
                             case 'clear':
                                 //Must be the clear button
                                 //@todo: Is it an All Clear or just a Clear?
                                 resetCalc()
-                                debug(
-                                        'ClearKey',
-                                        calculator.dataset.firstValue,
-                                        calculator.dataset.operator,
-                                        secondValue,
-                                        'prevKey: ' + previousKeyType
-                                        )
                                 break;
                             case 'calculate':
                                 if (firstValue) {
@@ -90,13 +76,6 @@
                                 calculator.dataset.modValue = secondValue
                                 calculator.dataset.previousKeyType = 'calculate'
                                 deselectOperator()
-                                debug(
-                                        'CalculateKey',
-                                        calculator.dataset.firstValue,
-                                        calculator.dataset.operator,
-                                        secondValue,
-                                        'prevKey: ' + previousKeyType
-                                        )
                                 break;
                             case 'add':
                             case 'subtract':
@@ -116,13 +95,6 @@
                                 // Add custom attributes to hold data
                                 calculator.dataset.previousKeyType = 'operator'
                                 calculator.dataset.operator = action
-                                debug(
-                                        'Operator ' + keyContent,
-                                        calculator.dataset.firstValue,
-                                        calculator.dataset.operator,
-                                        secondValue,
-                                        'prevKey: ' + previousKeyType
-                                        )
                                 break;
                             default:
                                 //It must be a number
@@ -141,13 +113,6 @@
                                 //So, current key which will now become previousKey 
                                 //after exiting this block. So, remember it as such.
                                 calculator.dataset.previousKeyType = 'number'
-                                debug(
-                                        'Number [' + keyContent + '] ',
-                                        calculator.dataset.firstValue,
-                                        calculator.dataset.operator,
-                                        secondValue,
-                                        'prevKey: ' + previousKeyType
-                                        )
                                 break;
                         }
                     }
