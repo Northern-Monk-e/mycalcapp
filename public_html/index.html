@@ -14,9 +14,9 @@
                 const display = calculator.querySelector('.calculator__display')
                 const keys = calculator.querySelector('.calculator__keys')
 
-                const calculate = (n1, operator, n2) => {
-                    n1 = parseFloat(n1), n2 = parseFloat(n2);
-                    return (operator === 'add' ? n1 + n2 : (operator === 'subtract' ? n1 - n2 : (operator === 'multiply' ? n1 * n2 : (operator === 'divide' ? n1 / n2 : 'SuperNatural'))));
+                const calculate = (n1, operator, n2, nthDp) => {
+                    n1 = parseFloat(n1), n2 = parseFloat(n2), nthDp = nthDp ? nthDp : 3
+                    return parseFloat((operator === 'add' ? n1 + n2 : (operator === 'subtract' ? n1 - n2 : (operator === 'multiply' ? n1 * n2 : (operator === 'divide' ? n1 / n2 : 'ERROR')))).toPrecision(nthDp));
                 }
 
                 var debug = function () {
@@ -30,6 +30,18 @@
                     const action = key.dataset.action
                     const keyContent = key.textContent
                     const displayedNum = display.textContent
+
+                    // Remove .is-depressed class from all keys
+                    const deselectOperator = () => Array.from(key.parentNode.children).forEach(k => k.classList.remove('is-depressed'))
+
+                    const resetCalc = () => {
+                        calculator.dataset.previousKeyType = '' //Should this be blank?
+                        calculator.dataset.operator = ''
+                        calculator.dataset.firstValue = ''
+                        calculator.dataset.modValue = ''
+                        display.textContent = 0
+                        deselectOperator()
+                    }
 
                     if (key.matches('button')) {
 
@@ -45,7 +57,7 @@
                                 } else if (previousKeyType === 'operator') {
                                     display.textContent = '0.'
                                 }
-                                calculator.dataset.previousKey = 'decimal'
+                                calculator.dataset.previousKeyType = 'decimal'
                                 debug(
                                         'DecimalKey',
                                         calculator.dataset.firstValue,
@@ -56,10 +68,8 @@
                                 break;
                             case 'clear':
                                 //Must be the clear button
-                                calculator.dataset.previousKeyType = undefined
-                                calculator.dataset.operator = undefined
-                                calculator.dataset.firstValue = undefined
-                                display.textContent = 0
+                                //@todo: Is it an All Clear or just a Clear?
+                                resetCalc()
                                 debug(
                                         'ClearKey',
                                         calculator.dataset.firstValue,
@@ -79,6 +89,7 @@
                                 }
                                 calculator.dataset.modValue = secondValue
                                 calculator.dataset.previousKeyType = 'calculate'
+                                deselectOperator()
                                 debug(
                                         'CalculateKey',
                                         calculator.dataset.firstValue,
@@ -91,8 +102,7 @@
                             case 'subtract':
                             case 'divide':
                             case 'multiply':
-                                // Remove .is-depressed class from all keys
-                                Array.from(key.parentNode.children).forEach(k => k.classList.remove('is-depressed'))
+                                deselectOperator();
                                 //Do we have a previously uncalculated sum to perform                                
                                 if (firstValue && operator && previousKeyType !== 'operator') {
                                     const calcValue = calculate(firstValue, operator, secondValue)
@@ -118,9 +128,11 @@
                                 //It must be a number
                                 if (displayedNum === '0' || previousKeyType === 'operator') {
                                     display.textContent = keyContent
-                                    //@debug
-                                    //has the previous value been saved/processed? 
-                                    //what if previous key was a decimal?
+                                } else if (previousKeyType === 'calculate') {
+                                    //Reset the calculator
+                                    resetCalc()
+                                    //Now add new number
+                                    display.textContent = keyContent
                                 } else {
                                     //Okay, must be a plural digit number - append.
                                     display.textContent = displayedNum + keyContent
@@ -130,7 +142,7 @@
                                 //after exiting this block. So, remember it as such.
                                 calculator.dataset.previousKeyType = 'number'
                                 debug(
-                                        'Number ' + keyContent,
+                                        'Number [' + keyContent + '] ',
                                         calculator.dataset.firstValue,
                                         calculator.dataset.operator,
                                         secondValue,
